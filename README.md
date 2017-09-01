@@ -1,10 +1,10 @@
-# Dotfiles by Alex Palcuie
+# My Dotfiles
 
-Shamelessly copied from [Alex Palcuie's repos](https://github.com/palcu/dotfiles) and dltered for my needs
+Shamelessly copied from [Alex Palcuie's repos](https://github.com/palcu/dotfiles) and altered to my needs...
 
 ## Setup
 
-### new Mac machine
+### macOS
 
 1. Install XCode tools using `xcode-select --install`
 2. Install [Brew](http://brew.sh/)
@@ -26,7 +26,7 @@ Shamelessly copied from [Alex Palcuie's repos](https://github.com/palcu/dotfiles
   ./launch
   ```
 
-### Setup for new Ubuntu machine
+### Ubuntu
 
 ```bash
 sudo apt-add-repository ppa:ansible/ansible
@@ -36,3 +36,7 @@ git clone https://github.com/palcu/dotfiles.git ~/dotfiles
 cd ~/dotfiles/playbooks
 ./launch
 ```
+
+## Testing
+
+Got macOS running in VirtualBox to test my dotfiles scripting thanks to [Jeff](https://github.com/geerlingguy/mac-dev-playbook)
