@@ -29,10 +29,10 @@ Shamelessly copied from [Alex Palcuie's repos](https://github.com/palcu/dotfiles
 ### Ubuntu
 
 ```bash
-sudo apt-add-repository ppa:ansible/ansible
-sudo apt-get update
-sudo apt-get install ansible software-properties-common git
-git clone https://github.com/palcu/dotfiles.git ~/dotfiles
+sudo apt update && sudo apt install -y software-properties-common git curl wget
+curl --silent --show-error --retry 5 https://bootstrap.pypa.io/get-pip.py | sudo python
+sudo pip install virtualenvwrapper ansible
+git clone https://github.com/laroo/dotfiles.git ~/dotfiles
 cd ~/dotfiles/playbooks
 ./launch
 ```

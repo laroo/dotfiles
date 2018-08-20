@@ -14,12 +14,6 @@ alias reload="source ~/.zshrc"
 alias netest="ping 8.8.8.8"
 alias simple="python -m SimpleHTTPServer"
 alias slytherin='mosh slytherin -- tmux attach -d || tmux new'
-beammeupscotty() {
-    /Users/alex/Projects/sshuttle/src/sshuttle -r $1 0.0.0.0/0 -vv
-}
-get_youtube_mp3() {
-    youtube-dl --extract-audio --audio-format mp3 $1
-}
 alias -g lastm='*(om[1])'
 
 # Python
@@ -73,21 +67,20 @@ analyze_commands(){
 }
 
 # Exports
-export EDITOR="vim"
+export EDITOR="nano"
 export LC_ALL="en_US.UTF-8"
 export LANG="en_US"
 export PATH=/usr/local/bin:$PATH # Brew path
 export PATH=/usr/local/sbin:$PATH # Brew second path
 export PATH=$PATH:$HOME/dotfiles/scripts
-export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/9.4/bin
 export TERM='xterm-256color'
 
 # Remove annoying messages
 unsetopt correctall
 
 # FASD for faster switching between directories
-eval "$(fasd --init auto)"
-alias v='f -e vim'
+#eval "$(fasd --init auto)"
+#alias v='f -e vim'
 
 # alt-left and alt-right for switching words in terminal
 # taken from https://github.com/solnic/dotfiles/blob/master/home/zsh/key-bindings.zsh
@@ -129,11 +122,12 @@ purple="%F{magenta}"
 limegreen="%F{green}"
 PR_RST="%f"
 
-PROMPT=$'
-%{$purple%}%n${PR_RST} at %{$orange%}%m${PR_RST} in %{$limegreen%}%~${PR_RST} %{$turquoise%}${PR_RST}
-$ '
+PROMPT=$'%{$purple%}%n${PR_RST} at %{$orange%}%m${PR_RST} in %{$limegreen%}%~${PR_RST} %{$turquoise%}${PR_RST} $ '
 
 # Source configuration for local machine if it exists
 [ -f ~/.zshrclocal ] && source ~/.zshrclocal
 
 # test -e ${HOME}/.iterm2_shell_integration.zsh && source ${HOME}/.iterm2_shell_integration.zsh
+
+source /usr/local/bin/virtualenvwrapper.sh
+

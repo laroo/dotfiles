@@ -13,6 +13,8 @@ zstyle ':prezto:load' pmodule \
   'utility' \
   'completion' \
   'prompt' \
+  'git' \
+  'docker' \
   'fasd'
 
 # Set the key mapping style to 'emacs' or 'vi'.
@@ -32,3 +34,6 @@ zstyle ':prezto:module:syntax-highlighting' highlighters \
   'pattern' \
   'cursor' \
   'root'
+
+zstyle ':prezto:module:prompt' theme agnoster
+

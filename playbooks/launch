@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-#git pull
+if [[ $EUID -eq 0 ]]; then
+   echo "This script cannot be run as root" 
+   exit 1
+fi
 
 if [[ `uname` == 'Linux' ]]; then
   ansible-playbook -i inventory ubuntu.yml

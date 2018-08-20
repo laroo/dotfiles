@@ -27,13 +27,54 @@
     - tmux
     - wget
     - zsh
+    # Snap package manager
+    - snapd
+    - snapd-xdg-open
+    - geany
+    - aptitude
+    - openssh-server
+    - gadmin-openvpn-client
+    # ZSH + agnoster theme
+    - fonts-powerline
+    # Android MTP
+    - go-mtpfs
+    # Other
+    - xubuntu-restricted-extras
 
-- name: Change shell to ZSH
+- name: Change shell to ZSH root
   become: yes
   become_method: sudo
   user: shell=/bin/zsh name=root
+
+- name: Change shell to ZSH current user
+  become: yes
+  become_method: sudo
+  user: shell=/bin/zsh name={{ ansible_user }}
 
 - name: Install FASD
   become: yes
   become_method: sudo
   copy: src=fasd dest=/usr/local/bin/fasd mode=755
+
+- name: Install Snap packages (classic)
+  command: "snap install --classic {{ item }}"
+  register: snap_result
+  changed_when: snap_result.rc != 0
+  become: yes
+  become_method: sudo
+  with_items:
+     - pycharm-professional
+     - datagrip
+     - slack
+     
+- name: Install Snap packages (jail)
+  command: "snap install {{ item }}"
+  register: snap_result
+  changed_when: snap_result.rc != 0
+  become: yes
+  become_method: sudo
+  with_items:
+     - spotify
+     - telegram-desktop
+     - vlc
+    
