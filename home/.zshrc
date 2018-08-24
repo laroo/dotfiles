@@ -5,14 +5,15 @@ fi
 
 # Aliases
 alias l="ls -F"
-alias ll="ls -AGlFth"
+#alias ll="ls -AGlFth"
+alias ll="ls -alh"
 alias ltr="ls -latr | tail"
 alias grep='grep --color=auto'
 alias df='df -H'
 alias fig='find . | grep'
 alias reload="source ~/.zshrc"
 alias netest="ping 8.8.8.8"
-alias simple="python -m SimpleHTTPServer"
+alias simplewebserver="python -m SimpleHTTPServer 9000"
 alias slytherin='mosh slytherin -- tmux attach -d || tmux new'
 alias -g lastm='*(om[1])'
 
@@ -34,7 +35,6 @@ alias zshrc="vim ~/.zshrc"
 alias vimrc="vim ~/.vimrc"
 alias vimlast="vim -c \"normal '0\""
 alias syslog="vim /var/log/syslog"
-alias bashar="open ~/Dropbox/bashar.pdf"
 alias devdocs="open http://devdocs.io"
 
 # Shorthands
@@ -109,6 +109,15 @@ setopt HIST_IGNORE_ALL_DUPS  # don't record dupes in history
 setopt HIST_REDUCE_BLANKS
 setopt interactivecomments # allow # in a comment
 
+kube_prompt()
+{
+   kubectl_current_context=$(kubectl config current-context)
+   kubectl_project=$(echo $kubectl_current_context | cut -d '_' -f 2)
+   kubectl_cluster=$(echo $kubectl_current_context | cut -d '_' -f 4)
+   kubectl_prompt="k8s:($kubectl_project|$kubectl_cluster)"
+   echo $kubectl_prompt
+}
+
 # Source awscli completion
 [ -f /usr/local/share/zsh/site-functions/_aws ] && source /usr/local/share/zsh/site-functions/_aws
 
@@ -120,9 +129,11 @@ turquoise="%F{cyan}"
 orange="%F{yellow}"
 purple="%F{magenta}"
 limegreen="%F{green}"
+red="%F{red}"
 PR_RST="%f"
 
 PROMPT=$'%{$purple%}%n${PR_RST} at %{$orange%}%m${PR_RST} in %{$limegreen%}%~${PR_RST} %{$turquoise%}${PR_RST} $ '
+RPROMPT=$'%{$red%}$(kube_prompt)'
 
 # Source configuration for local machine if it exists
 [ -f ~/.zshrclocal ] && source ~/.zshrclocal
@@ -130,4 +141,6 @@ PROMPT=$'%{$purple%}%n${PR_RST} at %{$orange%}%m${PR_RST} in %{$limegreen%}%~${P
 # test -e ${HOME}/.iterm2_shell_integration.zsh && source ${HOME}/.iterm2_shell_integration.zsh
 
 source /usr/local/bin/virtualenvwrapper.sh
+
+setopt promptsubst
 
