@@ -40,6 +40,10 @@
     - go-mtpfs
     # Other
     - xubuntu-restricted-extras
+    # For byzanz + xrectsel
+    - byzanz
+    - autoconf
+    - libx11-dev
 
 - name: Change shell to ZSH root
   become: yes
