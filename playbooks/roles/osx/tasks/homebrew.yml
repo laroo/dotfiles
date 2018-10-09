@@ -31,6 +31,7 @@
     - htop
     - tmux
     - nano
+    - fzf
 
 - name: Install apps with Homebrew Cask
   homebrew_cask: name={{ item }} state=present
@@ -45,3 +46,6 @@
 
 - name: Cleanup Brew packages
   command: brew cleanup
+
+- name: fzf: install useful key bindings and fuzzy completion
+  command: "$(brew --prefix)/opt/fzf/install"

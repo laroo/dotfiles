@@ -82,3 +82,8 @@
      - telegram-desktop
      - vlc
     
+- name: Download fzf
+  command: "git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf"
+
+- name: fzf: install useful key bindings and fuzzy completion
+  command: "~/.fzf/install --all"

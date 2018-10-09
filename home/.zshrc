@@ -73,6 +73,7 @@ export LANG="en_US"
 export PATH=/usr/local/bin:$PATH # Brew path
 export PATH=/usr/local/sbin:$PATH # Brew second path
 export PATH=$PATH:$HOME/dotfiles/scripts
+export PATH=$PATH:$HOME/Projects/git-jira-tools
 export TERM='xterm-256color'
 
 # Remove annoying messages
@@ -121,6 +122,19 @@ kube_prompt()
 # Source awscli completion
 [ -f /usr/local/share/zsh/site-functions/_aws ] && source /usr/local/share/zsh/site-functions/_aws
 
+# Load scripts per OS
+case `uname` in
+  Darwin)
+    # commands for OS X go here
+    echo "OSX system..."
+  ;;
+  Linux)
+    # commands for Linux go here
+    echo "Linux system..."
+    ~/dotfiles/home/.wacomcplrc.sh
+  ;;
+esac
+
 # Do a custom prompt stolen from steeeef theme
 zstyle ':prezto:module:prompt' theme 'off'
 setopt prompt_subst
@@ -144,3 +158,5 @@ source /usr/local/bin/virtualenvwrapper.sh
 
 setopt promptsubst
 
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
