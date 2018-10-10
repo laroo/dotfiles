@@ -29,8 +29,10 @@ Shamelessly copied from [Alex Palcuie's repos](https://github.com/palcu/dotfiles
 ### Ubuntu
 
 ```bash
-sudo apt update && sudo apt install -y software-properties-common git curl wget
-curl --silent --show-error --retry 5 https://bootstrap.pypa.io/get-pip.py | sudo python
+sudo apt update && sudo apt install -y software-properties-common git curl wget python3 python3-distutils
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.6 1
+curl --silent --show-error --retry 5 https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+sudo python3 get-pip.py 
 sudo pip install virtualenvwrapper ansible
 git clone https://github.com/laroo/dotfiles.git ~/dotfiles
 cd ~/dotfiles/playbooks

@@ -11,3 +11,6 @@
 [rebase]
 	autosquash = true
 	autostash = true
+[user]
+	email = j.laroo@web-idea.nl
+	name = Jan-Age

@@ -126,11 +126,9 @@ kube_prompt()
 case `uname` in
   Darwin)
     # commands for OS X go here
-    echo "OSX system..."
   ;;
   Linux)
     # commands for Linux go here
-    echo "Linux system..."
     ~/dotfiles/home/.wacomcplrc.sh
   ;;
 esac
@@ -147,7 +145,11 @@ red="%F{red}"
 PR_RST="%f"
 
 PROMPT=$'%{$purple%}%n${PR_RST} at %{$orange%}%m${PR_RST} in %{$limegreen%}%~${PR_RST} %{$turquoise%}${PR_RST} $ '
-RPROMPT=$'%{$red%}$(kube_prompt)'
+
+if [[ $(command -v "kubectl" &> /dev/null) ]]; then
+    # Only add k8s if it's installed
+    RPROMPT=$'%{$red%}$(kube_prompt)'
+fi
 
 # Source configuration for local machine if it exists
 [ -f ~/.zshrclocal ] && source ~/.zshrclocal

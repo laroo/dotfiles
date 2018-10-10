@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Check if wacom exists/installed, skip if not
+if [ ! -f "$file" ]; then
+    exit 0
+fi
+
 # Configuration for Wacom Bamboo CTH-461 on Ubuntu 18.04
 #
 # Add this script to your '~/.bashrc'

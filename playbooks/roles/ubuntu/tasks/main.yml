@@ -60,6 +60,10 @@
   become_method: sudo
   copy: src=fasd dest=/usr/local/bin/fasd mode=755
 
+- name: Check Snap exists
+  stat: path=/run/snapd.socket
+  register: snap_socket
+
 - name: Install Snap packages (classic)
   command: "snap install --classic {{ item }}"
   register: snap_result
@@ -70,7 +74,8 @@
      - pycharm-professional
      - datagrip
      - slack
-     
+  when: snap_socket.stat.exists 
+    
 - name: Install Snap packages (jail)
   command: "snap install {{ item }}"
   register: snap_result
@@ -81,9 +86,10 @@
      - spotify
      - telegram-desktop
      - vlc
+  when: snap_socket.stat.exists 
     
 - name: Download fzf
   command: "git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf"
 
-- name: fzf: install useful key bindings and fuzzy completion
+- name: fzf - install useful key bindings and fuzzy completion
   command: "~/.fzf/install --all"
