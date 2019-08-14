@@ -37,6 +37,9 @@ alias vimlast="vim -c \"normal '0\""
 alias syslog="vim /var/log/syslog"
 alias devdocs="open http://devdocs.io"
 
+#alias kubectl="echo 'ALIAS: OVERRIDE KUBECTL'; microk8s.kubectl --kubeconfig=$HOME/.kube/config"
+alias kubectl="microk8s.kubectl --kubeconfig=$HOME/.kube/config"
+
 # Shorthands
 alias e="exit"
 alias h='history -fd -500'
@@ -50,12 +53,6 @@ cl() {
       cd "$1"
       l
    fi
-}
-
-# mkdir & ls
-alias cm="mc"
-mc() {
-    mkdir -p "$*" && cd "$*" && pwd
 }
 
 # Analyze history data
@@ -146,10 +143,15 @@ PR_RST="%f"
 
 PROMPT=$'%{$purple%}%n${PR_RST} at %{$orange%}%m${PR_RST} in %{$limegreen%}%~${PR_RST} %{$turquoise%}${PR_RST} $ '
 
-if [[ $(command -v "kubectl" &> /dev/null) ]]; then
+#echo "KUBE PROMPT"
+#if [[ $(command -v "kubectl" &> /dev/null) ]]; then
+#    echo "KUBE PROMPT OK"
     # Only add k8s if it's installed
-    RPROMPT=$'%{$red%}$(kube_prompt)'
-fi
+#    RPROMPT=$'%{$red%}$(kube_prompt)'
+#fi
+
+source ~/Apps/kube-ps1/kube-ps1.sh
+PROMPT='$(kube_ps1)'$PROMPT
 
 # Source configuration for local machine if it exists
 [ -f ~/.zshrclocal ] && source ~/.zshrclocal

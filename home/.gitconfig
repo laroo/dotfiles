@@ -2,8 +2,50 @@
 [include]
 	path = ~/.gitconfig.local
 
+[core]
+	excludesfile = ~/.gitignore
+	editor = nano
+	pager = less -F -X
+	preloadindex = true
+
+[alias]
+	co = checkout
+	cob = checkout-branch-fuzzy
+	ci = commit -v
+	st = status
+	sync = !git pull && git push
+	graph = log --graph --oneline --decorate=short
+	amend = commit --amend
+	diffc = diff --cached
+
+	ignore = update-index --assume-unchanged
+	unignore = update-index --no-assume-unchanged
+	ignored = !git ls-files -v | grep "^[[:lower:]]"
+
+	mine = !"git log --author=$(git config --get user.email)"
+
+	nwadd = !sh -c 'git diff -b --no-color "$@" | git apply --cached --ignore-whitespace' -
+	branches = for-each-ref --sort=-committerdate refs/heads/
+	contributors = shortlog -s -n
+
+	# publish = !"git push -u origin $(git rev-parse --abbrev-ref HEAD)"
+	publish = !sh -c '_BRANCH=$(git rev-parse --abbrev-ref HEAD) && [ "$_BRANCH" != "master" ] && git push -u origin $_BRANCH'
+
+	# https://gist.github.com/santisbon/a1a60db1fb8eecd1beeacd986ae5d3ca
+	merge-origin-master = !sh -c '_CURRENT_BRANCH=$(git symbolic-ref --short HEAD) && git checkout master && git fetch -p origin && git merge origin/master && git checkout $_CURRENT_BRANCH && git merge master' -
+
+[diff]
+	algorithm = patience
+	compactionHeuristic = true
+
+[color]
+	ui = auto
+
 [merge]
 	summary = true
+
+[push]
+	default = upstream
 
 [pull]
 	rebase = true
@@ -11,6 +53,5 @@
 [rebase]
 	autosquash = true
 	autostash = true
-[user]
-	email = j.laroo@web-idea.nl
-	name = Jan-Age
+[rerere]
+	enabled = true
