@@ -11,9 +11,15 @@ logger "Setting up ${DEVICE}:"
 #logger "Action: {$ACTION}"
 
 # Check if wacom exists/installed, skip if not
-#if [ ! -f "$file" ]; then
-#    exit 0
-#fi
+XSETWACOM_BIN=$(command -v xsetwacom)
+if [ -z "${XSETWACOM_BIN}" ]; then
+    exit 0
+fi
+
+NUM_DEVICES=$(xsetwacom --list devices | wc -l)
+if [ "${NUM_DEVICES}" = "0" ]; then
+    exit 0
+fi
 
 # Configuration for Wacom Bamboo CTH-461 on Ubuntu 18.04
 #
