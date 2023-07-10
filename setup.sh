@@ -27,6 +27,7 @@ installAptPackages() {
   sudo apt-get install --yes \
     build-essential \
     nano \
+    stow \
 
 }
 
@@ -52,6 +53,10 @@ installShell() {
 
     # Install powerlevel10k
     git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.zsh-custom/themes/powerlevel10k
+
+    # Overwrite existing file
+    stow --adopt zsh
+    git restore .
   fi
 
   $(which zsh) -l

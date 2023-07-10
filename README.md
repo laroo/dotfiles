@@ -22,3 +22,20 @@ Moved away from Ansible as the installation itself required a lot of dependencie
 ### macOS
 
 (currently not supported anymore)
+
+
+## Testing
+
+Run in Docker compose
+
+  ```
+  docker compose build
+  docker compose run dotfiles /bin/bash
+  ```
+
+In Docker shell:
+
+  ```
+  cd ~/dotfiles
+  ./setup.sh
+  ```
