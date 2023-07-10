@@ -59,7 +59,8 @@ installShell() {
     git restore .
   fi
 
-  $(which zsh) -l
+  echo "Reload shell to get zsh"
+  # $(which zsh) -l
 
 }
 
