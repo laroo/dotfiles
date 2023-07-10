@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  dotfiles:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - .:/home/dotfileuser/dotfiles
+    command: ~/dotfiles/setup.sh --force
