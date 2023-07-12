@@ -1,14 +1,26 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-DEVICE="Wacom Bamboo Craft"
-STYLUS="${DEVICE} Pen stylus"
-ERASER="${DEVICE} Pen eraser"
-FINGER="${DEVICE} Finger touch"
-PAD="${DEVICE} pad"
+function _trap_ctrl_c() {
+    echo "** Trapped CTRL-C"
+    exit -1
+}
+trap _trap_ctrl_c INT
 
-logger "Setting up ${DEVICE}:"
-#logger "Device: {$DEVPATH}"
-#logger "Action: {$ACTION}"
+IFS=$'\n\t'
+set -o errexit
+set -o pipefail
+set -o nounset
+#set -o xtrace
+
+# https://github.com/rubienr/wacom
+# sudo apt-get install xbindkeys
+# xbindkeys -f wacom_xbindkeys.cfg --nodaemon
+
+# "notify-send --expire-time=50 'test message'"
+
+# apt-get install xdotool
+# xdotool click --repeat=8 --delay 60 4  # scroll up
+
 
 # Check if wacom exists/installed, skip if not
 XSETWACOM_BIN=$(command -v xsetwacom)
@@ -21,6 +33,49 @@ if [ "${NUM_DEVICES}" = "0" ]; then
     exit 0
 fi
 
+
+STYLUS=`xsetwacom --list devices | grep -i stylus | awk 'BEGIN{FS="\t*"}{ print $1 }' | awk '{$1=$1;print}'`
+ERASER=`xsetwacom --list devices | grep -i eraser | awk 'BEGIN{FS="\t*"}{ print $1 }' | awk '{$1=$1;print}'`
+FINGER=`xsetwacom --list devices | grep -i finger | awk 'BEGIN{FS="\t*"}{ print $1 }' | awk '{$1=$1;print}'`
+PAD=`xsetwacom --list devices | grep -i pad | awk 'BEGIN{FS="\t*"}{ print $1 }' | awk '{$1=$1;print}'`
+
+logger "Wacom:"
+logger "'${STYLUS}'"
+logger "'${ERASER}'"
+logger "'${FINGER}'"
+logger "'${PAD}'"
+
+if [ $# -ge 1 ] && [ -n "$1" ]
+then
+    ACTION="${1}"
+else
+    ACTION="setup"
+fi
+
+
+case $ACTION in
+  "toggle_touch")
+    TOUCH_STATE=`/usr/bin/xsetwacom --get "${FINGER}" "Touch"`
+    if [ $TOUCH_STATE = 'on' ]
+    then
+      /usr/bin/xsetwacom --set "${FINGER}" "Touch" "off"
+      notify-send --expire-time=50 'Wacom: Disabling touch'
+    else
+      /usr/bin/xsetwacom --set "${FINGER}" "Touch" "on"
+      notify-send --expire-time=50 'Wacom: Enabling touch'
+    fi
+    exit 0
+    ;;
+  "setup")
+    echo "Wacom setup..."
+    ;;
+  *)
+    echo "No action!"
+    exit 1
+    ;;
+esac
+
+
 # Configuration for Wacom Bamboo CTH-461 on Ubuntu 18.04
 #
 # Add this script to your '~/.bashrc'
@@ -32,39 +87,21 @@ fi
 # Wacom Bamboo Craft Pad pad      	id: 13	type: PAD
 # Wacom Bamboo Craft Pen eraser   	id: 17	type: ERASER
 
-#  Wacom Graphire4 4x5 stylus      	id: 12	type: STYLUS
-#  Wacom Graphire4 4x5 eraser      	id: 13	type: ERASER
-#  Wacom Graphire4 4x5 cursor      	id: 14	type: CURSOR
-#  Wacom Graphire4 4x5 pad         	id: 15	type: PAD
+# Wacom Graphire4 4x5 stylus      	id: 12	type: STYLUS
+# Wacom Graphire4 4x5 eraser      	id: 13	type: ERASER
+# Wacom Graphire4 4x5 cursor      	id: 14	type: CURSOR
+# Wacom Graphire4 4x5 pad         	id: 15	type: PAD
 
+# Wacom Bamboo 2FG 4x5 Pen stylus 	id: 15	type: STYLUS
+# Wacom Bamboo 2FG 4x5 Pen eraser 	id: 16	type: ERASER
+# Wacom Bamboo 2FG 4x5 Pad pad    	id: 17	type: PAD
+# Wacom Bamboo 2FG 4x5 Finger touch	id: 18	type: TOUCH
 
 # libwacom-list-local-devices
 
-# $ xsetwacom -s --get "${STYLUS}" all
-# xsetwacom set "${STYLUS}" "Area" "0 0 14720 9200"
-# xsetwacom set "${STYLUS}" "BindToSerial" "0"
-# xsetwacom set "${STYLUS}" "Button" "1" "button +1 "
-# xsetwacom set "${STYLUS}" "Button" "2" "button +2 "
-# xsetwacom set "${STYLUS}" "Button" "3" "button +3 "
-# xsetwacom set "${STYLUS}" "Button" "8" "button +8 "
-# xsetwacom set "${STYLUS}" "Gesture" "off"
-# xsetwacom set "${STYLUS}" "Mode" "Absolute"
-# xsetwacom set "${STYLUS}" "PanScrollThreshold" "1300"
-# xsetwacom set "${STYLUS}" "PressureCurve" "0 0 100 100"
-# xsetwacom set "${STYLUS}" "PressureRecalibration" "on"
-# xsetwacom set "${STYLUS}" "RawSample" "4"
-# xsetwacom set "${STYLUS}" "Rotate" "none"
-# xsetwacom set "${STYLUS}" "ScrollDistance" "0"
-# xsetwacom set "${STYLUS}" "Suppress" "2"
-# xsetwacom set "${STYLUS}" "TabletDebugLevel" "0"
-# xsetwacom set "${STYLUS}" "TabletPCButton" "off"
-# xsetwacom set "${STYLUS}" "TapTime" "250"
-# xsetwacom set "${STYLUS}" "Threshold" "26"
-# xsetwacom set "${STYLUS}" "ToolDebugLevel" "0"
-# xsetwacom set "${STYLUS}" "Touch" "off"
-# xsetwacom set "${STYLUS}" "ZoomDistance" "0"
 
 logger "Configuring: ${STYLUS}"
+# $ xsetwacom -s --get "${STYLUS}" all
 
 # Setup the buttons:
 # 1 = left click
@@ -98,121 +135,51 @@ logger "Configuring: ${STYLUS}"
 # /usr/bin/xsetwacom --set "${STYLUS}" "PressureCurve" "100 0 100 0" # super firm
 /usr/bin/xsetwacom --set "${STYLUS}" "PressureCurve" "0 10 90 100" # custom
 
-# $ /usr/bin/xsetwacom -s --get "Wacom Bamboo Craft Finger touch" all
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "Area" "0 0 15360 10240"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "Button" "1" "button +0 "
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "Button" "2" "button +0 "
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "Button" "3" "button +0 "
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "Button" "8" "button +8 "
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "ToolDebugLevel" "0"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "TabletDebugLevel" "0"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "Suppress" "2"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "RawSample" "4"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "PressureCurve" "0 0 100 100"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "Mode" "Absolute"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "Touch" "on"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "Gesture" "on"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "ZoomDistance" "675"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "ScrollDistance" "18"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "TapTime" "220"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "Rotate" "none"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "Threshold" "0"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "BindToSerial" "0"
-# xsetwacom set "Wacom Bamboo Craft Finger touch" "PanScrollThreshold" "1300"
 
-logger "Configuring: Wacom Bamboo Craft Finger touch"
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Finger touch" ScrollDistance 18
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Finger touch" TapTime 220
+logger "Configuring: ${FINGER}"
+# $ /usr/bin/xsetwacom -s --get "${FINGER}" all
 
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Finger touch" "Button" "1" 0
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Finger touch" "Button" "2" 0
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Finger touch" "Button" "3" 0
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Finger touch" "Button" "8" 0
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Finger touch" "Gesture" "off"
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Finger touch" "Touch" "off"
+#/usr/bin/xsetwacom --set "${FINGER}" "Area" "0 0 153600 102400"  # Super Slow (3.2x?)
+/usr/bin/xsetwacom --set "${FINGER}" "Area" "0 0 91560 61440"  # Slower (2x)
+#/usr/bin/xsetwacom --set "${FINGER}" "Area" "0 0 45780 30720"  # Slow (1x)
+/usr/bin/xsetwacom --set "${FINGER}" ScrollDistance 18
+/usr/bin/xsetwacom --set "${FINGER}" TapTime 60
+
+/usr/bin/xsetwacom --set "${FINGER}" "Button" "1" 0
+/usr/bin/xsetwacom --set "${FINGER}" "Button" "2" 0
+/usr/bin/xsetwacom --set "${FINGER}" "Button" "3" 0
+/usr/bin/xsetwacom --set "${FINGER}" "Button" "8" 0
+/usr/bin/xsetwacom --set "${FINGER}" "Gesture" "off"
+/usr/bin/xsetwacom --set "${FINGER}" "Touch" "on"
 
 
-# $ /usr/bin/xsetwacom -s --get "Wacom Bamboo Craft Pad pad" all
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "Button" "1" "button +1 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "Button" "2" "button +2 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "Button" "3" "button +3 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "Button" "8" "button +8 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "Button" "9" "button +9 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "ToolDebugLevel" "0"
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "TabletDebugLevel" "0"
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "Suppress" "2"
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "RawSample" "4"
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "Mode" "Absolute"
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "Touch" "off"
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "Gesture" "off"
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "ZoomDistance" "0"
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "ScrollDistance" "0"
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "TapTime" "250"
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "RelWheelUp" "1" "button +5 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "RelWheelDown" "2" "button +4 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "AbsWheelUp" "3" "button +4 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "AbsWheelDown" "4" "button +5 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "AbsWheel2Up" "5" "button +4 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "AbsWheel2Down" "6" "button +5 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "StripLeftUp" "1" "button +4 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "StripLeftDown" "2" "button +5 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "StripRightUp" "3" "button +4 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "StripRightDown" "4" "button +5 "
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "Threshold" "0"
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "BindToSerial" "0"
-# xsetwacom set "Wacom Bamboo Craft Pad pad" "PanScrollThreshold" "1300"
+logger "Configuring: ${PAD}"
+# $ /usr/bin/xsetwacom -s --get "${PAD}" all
 
-logger "Configuring: Wacom Bamboo Craft Pad pad"
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Pad pad" "Button" "1" 0
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Pad pad" "Button" "2" 0
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Pad pad" "Button" "3" 0
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Pad pad" "Button" "8" 0
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Pad pad" "Button" "9" 0
+# /usr/bin/xsetwacom --set "${PAD}" "Button" "1" 1             # left click  (left lower bottom)
+/usr/bin/xsetwacom --set "${PAD}" "Button" "1" "key lctrl lshift lalt 3"  # toggle touch  (left lower bottom)
+/usr/bin/xsetwacom --set "${PAD}" "Button" "2" 0            # Unknown
+/usr/bin/xsetwacom --set "${PAD}" "Button" "3" "key lctrl lshift lalt 1" # scroll up   (left upper top)
+/usr/bin/xsetwacom --set "${PAD}" "Button" "8" "key lctrl lshift lalt 2" # scroll down (left middle top)
+/usr/bin/xsetwacom --set "${PAD}" "Button" "9" 3            # right click (left middle bottom)
+/usr/bin/xsetwacom --set "${PAD}" "Touch" "off"
+/usr/bin/xsetwacom --set "${PAD}" "Mode" "Absolute" # Works like a touchpad
 
 
-# $ /usr/bin/xsetwacom -s --get "Wacom Bamboo Craft Pen eraser" all
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "Area" "0 0 14720 9200"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "Button" "1" "button +1 "
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "Button" "2" "button +2 "
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "Button" "3" "button +3 "
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "Button" "8" "button +8 "
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "ToolDebugLevel" "0"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "TabletDebugLevel" "0"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "Suppress" "2"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "RawSample" "4"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "PressureCurve" "0 0 100 100"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "Mode" "Absolute"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "Touch" "off"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "Gesture" "off"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "ZoomDistance" "0"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "ScrollDistance" "0"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "TapTime" "250"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "Rotate" "none"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "Threshold" "26"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "BindToSerial" "0"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "PressureRecalibration" "on"
-# xsetwacom set "Wacom Bamboo Craft Pen eraser" "PanScrollThreshold" "1300"
-
-
-logger "Configuring: Wacom Bamboo Craft Pen eraser"
-# /usr/bin/xsetwacom --set "Wacom Bamboo Craft Pen eraser" "Area" "0 0 0 0"
-# /usr/bin/xsetwacom --set "Wacom Bamboo Craft Pen eraser" "Area" "0 0 14720 9200"
+logger "Configuring: ${ERASER}"
+# $ /usr/bin/xsetwacom -s --get "${ERASER}" all
 
 # Setup the buttons:
 # 1 = left click
 # 2 = middle click
 # 3 = right click
 # 0 = none
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Pen eraser" "Button" "1" "0"
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Pen eraser" "Button" "2" "0"
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Pen eraser" "Button" "3" "0"
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Pen eraser" "Button" "8" "0"
+/usr/bin/xsetwacom --set "${ERASER}" "Button" "1" "0"
+/usr/bin/xsetwacom --set "${ERASER}" "Button" "2" "0"
+/usr/bin/xsetwacom --set "${ERASER}" "Button" "3" "0"
+/usr/bin/xsetwacom --set "${ERASER}" "Button" "8" "0"
 
-/usr/bin/xsetwacom --set "Wacom Bamboo Craft Pen eraser" "Threshold" "80"
-#/usr/bin/xsetwacom --set "Wacom Bamboo Craft Pen eraser" "Suppress" 10
+/usr/bin/xsetwacom --set "${ERASER}" "Threshold" "80"
 
-# /usr/bin/xsetwacom --set "Wacom Bamboo Craft Pen eraser" "PressureCurve" "0 100 0 100" # super soft
-# /usr/bin/xsetwacom --set "Wacom Bamboo Craft Pen eraser" "PressureCurve" "0 0 100 100" # linear
-# /usr/bin/xsetwacom --set "Wacom Bamboo Craft Pen eraser" "PressureCurve" "100 0 100 0" # super firm
 
 exit 0
