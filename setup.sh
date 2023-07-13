@@ -22,6 +22,8 @@ cd "${SCRIPT_DIR}"
 
 CURRENT_USER=$( whoami )
 
+STOW_DIR="${SCRIPT_DIR}/config"
+
 installAptPackages() {
   sudo apt-get update
   sudo apt-get install --yes \
