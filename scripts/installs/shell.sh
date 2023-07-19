@@ -4,14 +4,10 @@ installShell() {
   # Install zsh and required software
   echo "Installing zsh";
   if ! [ -x "$(command -v zsh)" ]; then
-    sudo apt-get install --yes zsh
+      # Overwrite existing file
+    stow --dir="${STOW_DIR}" --target="${HOME}" -S --adopt zsh
 
-    # Change the shell to zsh
-    echo "Changing the shell of this user to use zsh...";
-    # Only add if it doesn't exist
-    grep -qxF $(which zsh) /etc/shells || echo $(which zsh) | sudo tee -a /etc/shells
-    # sudo chsh -s $(which zsh) $CURRENT_USER
-    sudo usermod -s $(which zsh) $CURRENT_USER
+    sudo apt-get install --yes zsh
 
     # Install Oh My Zsh!
     echo "Installing Oh My Zsh...";
@@ -23,12 +19,16 @@ installShell() {
     # Install powerlevel10k
     git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.zsh-custom/themes/powerlevel10k
 
-    # Overwrite existing file
-    stow --adopt zsh
-    git restore .
+    # Change the shell to zsh
+    echo "Changing the shell of this user to use zsh...";
+    # Only add if it doesn't exist
+    grep -qxF $(which zsh) /etc/shells || echo $(which zsh) | sudo tee -a /etc/shells
+    # sudo chsh -s $(which zsh) $CURRENT_USER
+    sudo usermod -s $(which zsh) $CURRENT_USER
+
   fi
 
-  echo "Reload shell to get zsh"
+  # echo "Reload shell to get zsh"
   # $(which zsh) -l
 
 }

@@ -107,6 +107,15 @@ done
 
 case $DOTFILES_TYPE in
 
+  shell )
+    echo "Setting up for 'shell'..."
+
+    run initializeApt
+    run initializeAptUpgrade
+    run installAptCorePackages
+    run installShell
+    ;;
+
   headless )
     echo "Setting up for 'headless'..."
 
