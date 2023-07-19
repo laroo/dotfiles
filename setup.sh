@@ -22,7 +22,14 @@ cd "${SCRIPT_DIR}"
 
 CURRENT_USER=$( whoami )
 
-STOW_DIR="${SCRIPT_DIR}/config"
+export STOW_DIR="${SCRIPT_DIR}/config"
+
+source "${SCRIPT_DIR}/scripts/installs/debian-apt.sh"
+source "${SCRIPT_DIR}/scripts/installs/shell.sh"
+source "${SCRIPT_DIR}/scripts/installs/asdf.sh"
+source "${SCRIPT_DIR}/scripts/installs/pyenv.sh"
+# source "${SCRIPT_DIR}/scripts/installs/flatpak.sh"
+
 
 installAptPackages() {
   sudo apt-get update
@@ -33,138 +40,113 @@ installAptPackages() {
 
 }
 
-installShell() {
-  # Install zsh and required software
-  echo "Installing zsh";
-  if ! [ -x "$(command -v zsh)" ]; then
-    sudo apt-get install --yes zsh
-
-    # Change the shell to zsh
-    echo "Changing the shell of this user to use zsh...";
-    # Only add if it doesn't exist
-    grep -qxF $(which zsh) /etc/shells || echo $(which zsh) | sudo tee -a /etc/shells
-    # sudo chsh -s $(which zsh) $CURRENT_USER
-    sudo usermod -s $(which zsh) $CURRENT_USER
-
-    # Install Oh My Zsh!
-    echo "Installing Oh My Zsh...";
-    curl -L http://install.ohmyz.sh | sh
-    echo "Installing ZSH syntax highlighting...";
-    rm -rf ~/.zsh-custom/plugins/zsh-syntax-highlighting
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.zsh-custom/plugins/zsh-syntax-highlighting
-
-    # Install powerlevel10k
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.zsh-custom/themes/powerlevel10k
-
-    # Overwrite existing file
-    stow --adopt zsh
-    git restore .
-  fi
-
-  echo "Reload shell to get zsh"
-  # $(which zsh) -l
-
-}
-
-_installAsdfPackage() {
-  # $1 = binary name
-  # $2 = asdf package name
-  # $3 = package version (default = 'latest')
-  echo "package: $2"
-  if ! [ -x "$(command -v $1)" ]; then
-    asdf plugin add "$2" 
-    asdf install "$2" $3 && asdf global "$2" $3;
-  fi
-}
-
-installAsdf() {
-  # Clone repository
-  echo "Cloning asdf repository...";
-
-  if [ ! -d "$HOME/.asdf" ] ; then
-    git clone https://github.com/asdf-vm/asdf.git $HOME/.asdf;
-    echo '. $HOME/.asdf/asdf.sh' >> ~/.bashrc
-    echo '. $HOME/.asdf/completions/asdf.bash' >> ~/.bashrc
-  fi
-
-  source ~/.bashrc
-
-  # Install useful plugins (at least for me :D)
-  echo "Installing asdf plugins...";
-  source $HOME/.asdf/asdf.sh;
-
-  # asdf plugin list all
-
-  _installAsdfPackage ht httpie-go latest
-  _installAsdfPackage go golang latest
-  _installAsdfPackage aws awscli latest
-  _installAsdfPackage node nodejs latest
-  _installAsdfPackage jq jq latest
-  _installAsdfPackage redis-cli redis-cli latest
-  _installAsdfPackage k9s k9s latest
-  _installAsdfPackage helm helm latest
-  _installAsdfPackage saml2aws saml2aws latest
-  _installAsdfPackage kubectl kubectl 1.23.14
-
-}
-
-installPyenv() {
-  if [ ! -d "$HOME/.asdf" ] ; then
-    sudo apt-get install --yes \
-      build-essential \
-      libssl-dev \
-      zlib1g-dev \
-      libbz2-dev \
-      libreadline-dev \
-      libsqlite3-dev curl \
-      libncursesw5-dev \
-      xz-utils \
-      tk-dev \
-      libxml2-dev \
-      libxmlsec1-dev \
-      libffi-dev \
-      liblzma-dev \
-
-    git clone https://github.com/pyenv/pyenv.git ~/.pyenv
-
-    echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
-    echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
-    echo 'eval "$(pyenv init -)"' >> ~/.bashrc
-
-    # Doesn't work with bash
-    # echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.profile
-    # echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.profile
-    # echo 'eval "$(pyenv init -)"' >> ~/.profile
-
-    echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc
-    echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc
-    echo 'eval "$(pyenv init -)"' >> ~/.zshrc
-
-  fi
-
-  source ~/.bashrc
-}
-
-doIt() {
-  installAptPackages
-  installShell;
-  installAsdf;
-  installPyenv;
-}
-
 if [ "$EUID" -eq 0 ]
   then echo "Do not run as root! Will use sudo"
   exit 1
 fi
 
-if [ "${1-}" == "--force" -o "${1-}" == "-f" ]; then
-  doIt;
-else
-  read -p "I'm about to change the configuration files placed in your home directory. Do you want to continue? (y/n) " -n 1;
-  echo "";
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
-    doIt;
+function run() {
+  local CMD=$1
+  echo "Going to run '${CMD}'"
+  if [ $DOTFILES_FORCE == true ]; then
+    $CMD;
+  else
+    read -p "Do you want to continue? (y/n) " -n 1;
+    echo "";
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      $CMD;
+    fi;
   fi;
-fi;
+}
+
+function help() {
+  echo "Setup dotfiles installation"
+  echo "USAGE:"
+  echo " -t  --type <arg>   Installation type: headless or desktop"
+  echo " -f  --force        Don't ask for confirmation"
+}
+
+DOTFILES_FORCE=false
+DOTFILES_TYPE=
+
+while true; do
+  if [ $# -eq 0 ]; then
+    # No arguments left
+    break
+  fi
+
+  case "$1" in
+
+    -f | --force )
+      DOTFILES_FORCE=true
+      shift
+      ;;
+
+    -t | --type )
+      if [ $# -ge 2 ] && [ -n "$2" ]; then
+        DOTFILES_TYPE="$2"
+        shift
+      fi
+      shift
+      ;;
+
+    -- )
+      shift;
+      break
+      ;;
+
+    * )
+      break
+      ;;
+  esac
+
+done
+
+# echo "FORCE: ${DOTFILES_FORCE}"
+# echo "INSTALL_TYPE: ${DOTFILES_TYPE}"
+
+case $DOTFILES_TYPE in
+
+  headless )
+    echo "Setting up for 'headless'..."
+
+    run initializeApt
+    # run installAptRepositories
+    run initializeAptUpgrade
+    run installAptCorePackages
+    run installAptBuildPackages
+    run installAptCliPackages
+
+    run installShell
+    run installAsdf
+    run installPyenv
+
+    # run installFlatpak
+    ;;
+
+  desktop )
+    echo "Setting up for 'desktop'..."
+
+    run initializeApt
+    run installAptRepositories
+    run initializeAptUpgrade
+    run installAptCorePackages
+    run installAptBuildPackages
+    run installAptCliPackages
+
+    run installShell
+    run installAsdf
+    run installPyenv
+
+    run installFlatpak
+    ;;
+
+  * )
+    echo "Unknown installation type: ${DOTFILES_TYPE}"
+    help
+    exit 1
+    ;;
+esac
+
 
 echo "[done]"

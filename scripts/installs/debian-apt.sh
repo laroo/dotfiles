@@ -1,37 +1,29 @@
 #!/usr/bin/env bash
 
-################################################################
-# 📜 Debian/ Ubuntu, apt Package Install / Update Script       #
-################################################################
-# Installs listed packages on Debian-based systems via apt-get #
-# Also updates the cache database and existing applications    #
-# Confirms apps aren't installed via different package manager #
-# Doesn't include desktop apps, that're managed via Flatpak    #
-# Apps are sorted by category, and arranged alphabetically     #
-# Be sure to delete / comment out anything you do not need     #
-# For more info, see: https://wiki.debian.org/Apt              #
-################################################################
-# MIT Licensed (C) Alicia Sykes 2023 <https://aliciasykes.com> #
-################################################################
-
-# Apps to be installed via apt-get
-debian_apps=(
-  # Essentials
-  'git'           # Version controll
+core_packages=(
+  'git'           # Version control
   'nano'          # Text editor
-  'tmux'          # Term multiplexer
   'wget'          # Download files
   'curl'          # Download files
+  'stow'          # Needed for config dotfiles
+)
+
+build_packages=(
+  'build-essential'
+)
+
+cli_packages=(
 
   # CLI Power Basics
+  'tmux'          # Term multiplexer
   'aria2'         # Resuming download util (better wget)
   'bat'           # Output highlighting (better cat)
-  'broot'         # Interactive directory navigation
-  'ctags'         # Indexing of file info + headers
-  'diff-so-fancy' # Readable file compares (better diff)
+  # 'broot'         # Interactive directory navigation
+  # 'ctags'         # Indexing of file info + headers
+  # 'diff-so-fancy' # Readable file compares (better diff)
   'fzf'           # Fuzzy file finder and filtering
-  'jq'            # JSON parser, output and query files
-  'procs'         # Advanced process viewer (better ps)
+  # 'jq'            # JSON parser, output and query files
+  # 'procs'         # Advanced process viewer (better ps)
   'tree'          # Directory listings as tree structure
   'xsel'          # Copy paste access to the X clipboard
 
@@ -42,8 +34,8 @@ debian_apps=(
   'htop'
   'btop'          # Live system resource monitoring
   'bmon'          # Bandwidth utilization monitor
-  'ctop'          # Container metrics and monitoring
-  'gping'         # Interactive ping tool, with graph
+  # 'ctop'          # Container metrics and monitoring
+  # 'gping'         # Interactive ping tool, with graph
 )
 
 ubuntu_repos=(
@@ -64,113 +56,48 @@ debian_repos=(
 # zoxide, clamav, cryptsetup, gnupg, lynis, btop, gping.
 
 
-# Colors
-PURPLE='\033[0;35m'
-YELLOW='\033[0;93m'
-CYAN_B='\033[1;96m'
-LIGHT='\x1b[2m'
-RESET='\033[0m'
-
-PROMPT_TIMEOUT=15 # When user is prompted for input, skip after x seconds
-
-# If set to auto-yes - then don't wait for user reply
-if [[ $* == *"--auto-yes"* ]]; then
-  PROMPT_TIMEOUT=0
-  REPLY='Y'
-fi
-
-# Print intro message
-echo -e "${PURPLE}Starting Debian/ Ubuntu package install & update script"
-echo -e "${YELLOW}Before proceeding, ensure your happy with all the packages listed in \e[4m${0##*/}"
-echo -e "${RESET}"
-
-# Check if running as root, and prompt for password if not
-if [ "$EUID" -ne 0 ]; then
-  echo -e "${PURPLE}Elevated permissions are required to adjust system settings."
-  echo -e "${CYAN_B}Please enter your password...${RESET}"
-  sudo -v
-  if [ $? -eq 1 ]; then
-    echo -e "${YELLOW}Exiting, as not being run as sudo${RESET}"
+initializeApt() {
+  # Check apt-get actually installed
+  if ! hash apt 2> /dev/null; then
+    echo "apt doesn't seem to be present on your system. Exiting..."
     exit 1
   fi
-fi
+  sudo apt update
+}
 
-# Check apt-get actually installed
-if ! hash apt 2> /dev/null; then
-  echo "${YELLOW_B}apt doesn't seem to be present on your system. Exiting...${RESET}"
-  exit 1
-fi
+initializeAptUpgrade() {
+  sudo apt upgrade -y
+  sudo apt autoclean -y
+}
 
-sudo apt-get update
-
-# Enable upstream package repositories
-echo -e "${CYAN_B}Would you like to enable listed repos? (y/N)${RESET}\n"
-read -t $PROMPT_TIMEOUT -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+installAptRepositories() {
+  # Enable upstream package repositories
   if ! hash add-apt-repository 2> /dev/null; then
-    sudo apt install --reinstall software-properties-common
+    sudo apt install --reinstall software-properties-common -y
   fi
   # If Ubuntu, add Ubuntu repos
   if lsb_release -a 2>/dev/null | grep -q 'Ubuntu'; then
     for repo in ${ubuntu_repos[@]}; do
-      echo -e "${PURPLE}Enabling ${repo} repo...${RESET}"
-      sudo add-apt-repository $repo
+      echo -e "Enabling ${repo} repo..."
+      sudo add-apt-repository $repo -y
     done
   else
     # Otherwise, add Debian repos
     for repo in ${debian_repos[@]}; do
-      echo -e "${PURPLE}Enabling ${repo} repo...${RESET}"
-      sudo add-apt-repository $repo
+      echo -e "Enabling ${repo} repo..."
+      sudo add-apt-repository $repo -y
     done
   fi
-fi
+}
 
-# Prompt user to update package database
-echo -e "${CYAN_B}Would you like to update package database? (y/N)${RESET}\n"
-read -t $PROMPT_TIMEOUT -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  echo -e "${PURPLE}Updating dadatbase...${RESET}"
-  sudo apt update
-fi
+installAptCorePackages() {
+  sudo apt install ${core_packages[@]} --assume-yes
+}
 
-# Prompt user to upgrade currently installed packages
-echo -e "${CYAN_B}Would you like to upgrade currently installed packages? (y/N)${RESET}\n"
-read -t $PROMPT_TIMEOUT -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  echo -e "${PURPLE}Upgrading installed packages...${RESET}"
-  sudo apt upgrade
-fi
+installAptBuildPackages() {
+  sudo apt install ${build_packages[@]} --assume-yes
+}
 
-# Prompt user to clear old package caches
-echo -e "${CYAN_B}Would you like to clear unused package caches? (y/N)${RESET}\n"
-read -t $PROMPT_TIMEOUT -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  echo -e "${PURPLE}Freeing up disk space...${RESET}"
-  sudo apt autoclean
-fi
-
-# Prompt user to install all listed apps
-echo -e "${CYAN_B}Would you like to install listed apps? (y/N)${RESET}\n"
-read -t $PROMPT_TIMEOUT -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  echo -e "${PURPLE}Starting install...${RESET}"
-  for app in ${debian_apps[@]}; do
-    if hash "${app}" 2> /dev/null; then
-      echo -e "${YELLOW}[Skipping]${LIGHT} ${app} is already installed${RESET}"
-    elif hash flatpak 2> /dev/null && [[ ! -z $(echo $(flatpak list --columns=ref | grep $app)) ]]; then
-      echo -e "${YELLOW}[Skipping]${LIGHT} ${app} is already installed via Flatpak${RESET}"
-    else
-      echo -e "${PURPLE}[Installing]${LIGHT} Downloading ${app}...${RESET}"
-      sudo apt install ${app} --assume-yes
-    fi
-  done
-fi
-
-echo -e "${PURPLE}Finished installing / updating Debian packages.${RESET}"
-
-# EOF
+installAptCliPackages() {
+  sudo apt install ${cli_packages[@]} --assume-yes
+}
