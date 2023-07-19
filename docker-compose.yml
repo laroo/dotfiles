@@ -7,4 +7,4 @@ services:
       dockerfile: ./Dockerfile
     volumes:
       - .:/home/dotfileuser/dotfiles
-    command: ~/dotfiles/setup.sh --force
+    command: ~/dotfiles/setup.sh --force -t headless

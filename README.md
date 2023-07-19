@@ -37,5 +37,5 @@ In Docker shell:
 
   ```
   cd ~/dotfiles
-  ./setup.sh --force
+  ./setup.sh --force -t headless
   ```
