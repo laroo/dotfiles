@@ -28,7 +28,8 @@ source "${SCRIPT_DIR}/scripts/installs/debian-apt.sh"
 source "${SCRIPT_DIR}/scripts/installs/shell.sh"
 source "${SCRIPT_DIR}/scripts/installs/asdf.sh"
 source "${SCRIPT_DIR}/scripts/installs/pyenv.sh"
-# source "${SCRIPT_DIR}/scripts/installs/flatpak.sh"
+source "${SCRIPT_DIR}/scripts/installs/flatpak.sh"
+source "${SCRIPT_DIR}/scripts/installs/fonts.sh"
 
 
 installAptPackages() {
@@ -143,6 +144,7 @@ case $DOTFILES_TYPE in
     run installAptBuildPackages
     run installAptCliPackages
 
+    run installFonts
     run installShell
     run installAsdf
     run installPyenv
