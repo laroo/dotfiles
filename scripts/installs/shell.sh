@@ -4,8 +4,6 @@ installShell() {
   # Install zsh and required software
   echo "Installing zsh";
   if ! [ -x "$(command -v zsh)" ]; then
-      # Overwrite existing file
-    stow --dir="${STOW_DIR}" --target="${HOME}" -S --adopt zsh
 
     sudo apt-get install --yes zsh
 
@@ -18,6 +16,13 @@ installShell() {
 
     # Install powerlevel10k
     git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.zsh-custom/themes/powerlevel10k
+
+    # Overwritten by og my zsh
+    rm -f "${HOME}/.zshrc"
+
+    echo "Stow: config=${STOW_DIR} home=${HOME}"
+    stow -v 1 --dir="${STOW_DIR}" --target="${HOME}" -S --adopt zsh
+
 
     # Change the shell to zsh
     echo "Changing the shell of this user to use zsh...";
