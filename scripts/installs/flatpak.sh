@@ -28,7 +28,10 @@ flatpak_apps=(
   # Software development
   'com.visualstudio.code'     # Extendable IDE
   'com.getpostman.Postman'    # API development
-  'flathub org.gnome.GHex'    # Hex and binary inspector
+  'org.wxhexeditor.wxHexEditor'  # Hex editor
+  'org.gnome.meld'               # Diff
+  'io.dbeaver.DBeaverCommunity'  # DB viewer
+  'com.jetbrains.PyCharm-Professional'  # Python IDE
 
   # Browsers and internet
   'org.mozilla.firefox'       # Firefox web browser (primary)
@@ -37,6 +40,7 @@ flatpak_apps=(
   # Office
   'org.libreoffice.LibreOffice' # Office suite
   'md.obsidian.Obsidian'        # Markdown editor
+  'org.geany.Geany'     # Text editor
   
   # Personal
   'com.nordpass.NordPass'     # Password manager

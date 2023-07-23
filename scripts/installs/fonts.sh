@@ -12,6 +12,7 @@ installFonts() {
         # Mac OSX
         usr_font_dir="$HOME/Library/Fonts"
     fi
+    mkdir -p "${usr_font_dir}"
 
     cp -f "${font}" "${usr_font_dir}"
 
@@ -20,14 +21,5 @@ installFonts() {
   # Reset font cache on Linux
   if [[ -n $(command -v fc-cache) ]]; then
     fc-cache -vf "${usr_font_dir}"
-    case $? in
-      [0-1])
-        # Catch fc-cache returning 1 on a success
-        exit 0
-        ;;
-      *)
-        exit $?
-        ;;
-    esac
   fi
 }

@@ -4,10 +4,19 @@ _installAsdfPackage() {
   # $1 = binary name
   # $2 = asdf package name
   # $3 = package version (default = 'latest')
-  echo "package: $2"
-  if ! [ -x "$(command -v $1)" ]; then
-    asdf plugin add "$2" 
-    asdf install "$2" $3 && asdf global "$2" $3;
+  local binary=$1
+  local package=$2
+  local version=$3
+  echo "ASDF package: '${binary}==${version}' from '${package}'"
+  if ! [ -x "$(command -v $binary)" ]; then
+    if ! echo $(asdf plugin list) | grep -q "${package}" ; then
+      echo "Adding plugin ${package}"
+      asdf plugin add "${package}"
+    fi
+    local latest_version=$(asdf latest "${package}")
+    echo "(latest version: ${latest_version})"
+    #asdf install "${package}" "${version}"
+    #asdf global "${package}" "${version}";
   fi
 }
 
@@ -25,6 +34,8 @@ installAsdf() {
   echo "Installing asdf plugins...";
   source $HOME/.asdf/asdf.sh;
 
+  stow -v 1 --dir="${STOW_DIR}" --target="${HOME}" -S --adopt asdf
+
   # asdf plugin list all
 
   _installAsdfPackage ht httpie-go latest
@@ -37,5 +48,7 @@ installAsdf() {
   _installAsdfPackage helm helm latest
   _installAsdfPackage saml2aws saml2aws latest
   _installAsdfPackage kubectl kubectl 1.23.14
+  _installAsdfPackage kubectx kubectx latest
 
+  asdf current
 }

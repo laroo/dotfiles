@@ -1,0 +1,11 @@
+httpie-go 0.7.0
+awscli 2.13.1
+nodejs 20.4.0
+redis-cli 7.0.12
+golang 1.20.6
+jq 1.6
+k9s 0.27.4
+saml2aws 2.36.10
+helm 3.12.2
+kubectl 1.23.14
+kubectx 0.9.5
