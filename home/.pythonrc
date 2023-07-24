@@ -1,7 +1,5 @@
 # vim: set ft=python :
 
-from __future__ import print_function
-
 from pprint import pprint
 import os
 import time
@@ -17,4 +15,4 @@ try:
 except ImportError:
     import pdb
 
-print("\nLaroou's Python")
+print("\nLoaded '~\.pythonrc' imports")

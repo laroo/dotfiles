@@ -6,6 +6,8 @@ core_packages=(
   'wget'          # Download files
   'curl'          # Download files
   'stow'          # Needed for config dotfiles
+  'coreutils'
+  'moreutils'
 )
 
 build_packages=(
